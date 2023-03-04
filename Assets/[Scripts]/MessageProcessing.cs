@@ -3,28 +3,30 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using Object = System.Object;
 
 
-public struct HostToClient
+public struct TCPHostToClient
 {
-    public const int CLIENT_CONNECTED = 1;
-    public const int THE_NAME_IS_USED = 2;
-    public const int ADD_PLAYER_TO_SCREEN = 3;
-    public const int SEND_PLAYERDEST_TO_CLIENT = 4;
-    public const int SEND_PLAYER_POS_DEST_TO_CLIENT = 5;
+    public const int LOGGED_SUCCESSFULLY = 1;
+    public const int LOGIN_DENIED = 2;
 
 }
 
-public struct ClientToHost
+public struct TCPClientToHost
 {
-    public const int CONNECT = 1;
-    public const int DISCONNECT = 2;
-    public const int SEND_MY_DESTINATION = 3;
-    public const int SEND_MY_POS_AND_DEST = 4;
+
     
 }
 public class MessageProcessing : MonoBehaviour
 {
+    [Header("Account Part")] [SerializeField] 
+    private string userName;
+    public string Login
+    {
+        set => userName = value;
+    }
+
     private bool createNew = false;
     private Vector3 pos = new Vector3();
     private Vector3 dest11 = new Vector3();
@@ -90,13 +92,24 @@ public class MessageProcessing : MonoBehaviour
             }
             switch (identifier)
             {
-                
+                case TCPHostToClient.LOGGED_SUCCESSFULLY:
+                    StateManager.Instance.UpdateGameState(GameState.accountState);
+                    break;
+                case TCPHostToClient.LOGIN_DENIED:
+                    if (GameObject.Find("ErrorMessage") != null && splitter.Length > 1)
+                    {
+                        GameObject.Find("ErrorMessage").SetActive(true);
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().text = splitter[1];
+                    }
+                    break;
                 
                 
                 default: break;
             }
         }
     }
+    
+    
 
     private static void SendTCPMessage(string msg)
     {

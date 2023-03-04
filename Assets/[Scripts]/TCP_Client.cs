@@ -40,10 +40,6 @@ public class TCP_Client : MonoBehaviour
             loginText = GameObject.Find("Login_f").GetComponent<TMPro.TMP_InputField>().text;
         if(GameObject.Find("Password_f") != null)
             passwordText = GameObject.Find("Password_f").GetComponent<TMPro.TMP_InputField>().text;
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            SendMessageToServer(loginText + ':' + passwordText);
-        }
 
         if (stream != null && stream.DataAvailable)
         {
@@ -57,6 +53,7 @@ public class TCP_Client : MonoBehaviour
     public void LogInAccount()
     {
         SendMessageToServer(loginText + ':' + passwordText);
+        StateManager.Instance.lastlySentLogin = loginText;
     }
 
     private void ConnectToServer()
