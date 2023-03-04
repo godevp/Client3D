@@ -50,14 +50,14 @@ public class Player : MonoBehaviour
                    destPosObject.transform.position = new Vector3(destPos.x, 0, destPos.z);
                }
            }
-           SendUDPMessage(UDP_Client.instance._name + ':' + ClientToUdpHost.SEND_MY_DESTINATION + ':' + destPos.x + ',' + destPos.y + ',' + destPos.z);
+           //SendUDPMessage(UDP_Client.instance._name + ':' + ClientToUdpHost.SEND_MY_DESTINATION + ':' + destPos.x + ',' + destPos.y + ',' + destPos.z);
        }
    }
    void MoveToDestPos()
    {
        if ((transform.position - destPos).magnitude > 0.1f)
        {
-           transform.position = MoveTowards11(transform.position, new Vector3(destPos.x,transform.position.y,destPos.z), 15 * Time.deltaTime);
+           transform.position = MoveTowards11(transform.position, new Vector3(destPos.x,transform.position.y,destPos.z), 15 * 0.0009f);
        }
    }
    
@@ -73,10 +73,10 @@ public class Player : MonoBehaviour
         return current + direction / magnitude * maxDistanceDelta;
     }
 
-    private static void SendUDPMessage(string message)
-    {
-       UDP_Client.instance.SendMessageToUDPHost(message);
-    }
+    // private static void SendUDPMessage(string message)
+    // {
+    //    //UDP_Client.instance.SendMessageToUDPHost(message);
+    // }
  private void OnDrawGizmos()
  {
     Gizmos.DrawLine(transform.position, destPos);

@@ -33,7 +33,8 @@ public class ClientMessageProcessing : MonoBehaviour
 
     private void Start()
     {
-        _player = FindObjectOfType<Player>();
+        if(FindObjectOfType<Player>() != null)
+            _player = FindObjectOfType<Player>();
     }
 
     void Update()
