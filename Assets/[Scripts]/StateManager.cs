@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,7 +38,17 @@ public class StateManager : MonoBehaviour
         instance = this;
     }
 
-    public void UpdateGameState(GameState newState)
+    public void JoinWorld()
+    {
+        UpdateGameState(GameState.gameState);
+    }
+
+    public void LogOut()
+    {
+        UpdateGameState(GameState.logingState);
+        TCP_Client.Instance.SendMessageToServer(MessageProcessing.Instance.Login + ':' + TCPClientToHost.DISCONNECT);
+    }
+public void UpdateGameState(GameState newState)
     {
         state = newState;
         
@@ -53,7 +64,7 @@ public class StateManager : MonoBehaviour
                 MessageProcessing.Instance.Login = lastlySentLogin;
                 break;
             case GameState.gameState:
-         
+                SceneManager.LoadScene(1);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);

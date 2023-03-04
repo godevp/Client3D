@@ -6,8 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System;
-using UnityEditor.PackageManager;
-using System.Security.Cryptography;
 
 public class UDP_Client : MonoBehaviour
 {

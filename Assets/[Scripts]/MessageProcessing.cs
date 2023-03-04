@@ -5,7 +5,7 @@ using System.Text;
 using UnityEngine;
 using Object = System.Object;
 
-
+#region Identifiers
 public struct TCPHostToClient
 {
     public const int LOGGED_SUCCESSFULLY = 1;
@@ -15,16 +15,20 @@ public struct TCPHostToClient
 
 public struct TCPClientToHost
 {
+    public const int DISCONNECT = 1;
 
-    
 }
+#endregion
 public class MessageProcessing : MonoBehaviour
 {
+    #region variables
+    
     [Header("Account Part")] [SerializeField] 
     private string userName;
     public string Login
     {
         set => userName = value;
+        get => userName;
     }
 
     private bool createNew = false;
@@ -39,7 +43,9 @@ public class MessageProcessing : MonoBehaviour
     {
         get { return instance;  }
     }
-    
+    #endregion
+
+    #region Awake, Start, Update
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
@@ -56,7 +62,10 @@ public class MessageProcessing : MonoBehaviour
     {
         CreateNewPlayerOnTheirConnect();
     }
-
+    #endregion
+    /// <summary>
+    /// This function will add new player to the game scene.
+    /// </summary>
     void CreateNewPlayerOnTheirConnect()
     {
         if (createNew)
@@ -77,7 +86,10 @@ public class MessageProcessing : MonoBehaviour
             dest11 = new Vector3();
         }
     }
-    
+    /// <summary>
+    /// Message Processing itself. Here will be decided what logic will be used after a certain message received from server.
+    /// </summary>
+    /// <param name="msg"></param>
     public void MSGProcessingBytoToString(string msg)
     {
         Debug.Log("Received message: " + msg);
@@ -110,7 +122,10 @@ public class MessageProcessing : MonoBehaviour
     }
     
     
-
+    /// <summary>
+    /// Takes the function for sending TCP messages from TCP_Client. Just for easiest use.
+    /// </summary>
+    /// <param name="msg"></param>
     private static void SendTCPMessage(string msg)
     {
         TCP_Client.Instance.SendMessageToServer(msg);
