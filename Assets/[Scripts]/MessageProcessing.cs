@@ -10,7 +10,8 @@ public struct TCPHostToClient
 {
     public const int LOGGED_SUCCESSFULLY = 1;
     public const int LOGIN_DENIED = 2;
-
+    public const int REGISTRATION_FAILED = 3;
+    public const int REGISTRATION_APPROVED = 4;
 }
 
 public struct TCPClientToHost
@@ -114,17 +115,45 @@ public class MessageProcessing : MonoBehaviour
             switch (identifier)
             {
                 case TCPHostToClient.LOGGED_SUCCESSFULLY:
+                {
                     StateManager.Instance.UpdateGameState(GameState.accountState);
                     break;
+                }
+                   
                 case TCPHostToClient.LOGIN_DENIED:
+                {
                     if (GameObject.Find("ErrorMessage") != null && splitter.Length > 1)
                     {
                         GameObject.Find("ErrorMessage").SetActive(true);
                         GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().text = splitter[1];
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().color = Color.red;
                     }
                     break;
-                
-                
+                }
+                case TCPHostToClient.REGISTRATION_FAILED:
+                {
+                    if (GameObject.Find("ErrorMessage") != null && splitter.Length > 1)
+                    {
+                        GameObject.Find("ErrorMessage").SetActive(true);
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().text = splitter[1];
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().color = Color.red;
+                    }
+                    break;
+                }
+                case TCPHostToClient.REGISTRATION_APPROVED:
+                {
+                    if (GameObject.Find("ErrorMessage") != null && splitter.Length > 1)
+                    {
+                        GameObject.Find("ErrorMessage").SetActive(true);
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().text = "Registration completed";
+                        GameObject.Find("ErrorMessage").GetComponent<TMPro.TMP_Text>().color = Color.green;
+
+                        loginText = splitter[1];
+                        passwordText = splitter[2];
+                    }
+                    break;
+                }
+
                 default: break;
             }
         }
@@ -148,7 +177,6 @@ public class MessageProcessing : MonoBehaviour
 
     public void Registration()
     {
-        // SendTCPMessage(loginText + ':' + Tcp);
-        // StateManager.Instance.lastlySentLogin = loginText;
+        SendTCPMessage(TCPClientToHost.REGISTRATION.ToString() + ':' + loginText + ':' + passwordText);
     }
 }

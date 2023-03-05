@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -36,8 +37,6 @@ public class TCP_Client : MonoBehaviour
 
     private void Update()
     {
-        
-
         if (stream != null && stream.DataAvailable)
         {
             int bytesRead = stream.Read(receiveBuffer, 0, receiveBuffer.Length);
@@ -60,7 +59,13 @@ public class TCP_Client : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError("Error connecting to server: " + e.Message);
+            StartCoroutine(TryReconnect());
         }
+    }
+    private IEnumerator TryReconnect()
+    {
+        yield return new WaitForSeconds(1.0f);
+        ConnectToServer();
     }
 
     public void SendMessageToServer(string message)
