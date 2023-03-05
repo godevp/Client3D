@@ -46,7 +46,7 @@ public class StateManager : MonoBehaviour
     public void LogOut()
     {
         UpdateGameState(GameState.logingState);
-        TCP_Client.Instance.SendMessageToServer(MessageProcessing.Instance.Login + ':' + TCPClientToHost.DISCONNECT);
+        TCP_Client.Instance.SendMessageToServer(TCPClientToHost.DISCONNECT.ToString() + ':' + MessageProcessing.Instance.Login);
     }
 public void UpdateGameState(GameState newState)
     {

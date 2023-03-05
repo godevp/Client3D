@@ -16,6 +16,8 @@ public struct TCPHostToClient
 public struct TCPClientToHost
 {
     public const int DISCONNECT = 1;
+    public const int REGISTRATION = 2;
+    public const int LOGIN = 3;
 
 }
 #endregion
@@ -36,7 +38,7 @@ public class MessageProcessing : MonoBehaviour
     private Vector3 dest11 = new Vector3();
     private string nameForNewPlayer = "";
     private Player _player;
-
+    private string loginText, passwordText;
     private static MessageProcessing instance;
 
     public static MessageProcessing Instance
@@ -60,9 +62,16 @@ public class MessageProcessing : MonoBehaviour
 
     void Update()
     {
+        if(GameObject.Find("Login_f") != null)
+            loginText = GameObject.Find("Login_f").GetComponent<TMPro.TMP_InputField>().text;
+        if(GameObject.Find("Password_f") != null)
+            passwordText = GameObject.Find("Password_f").GetComponent<TMPro.TMP_InputField>().text;
         CreateNewPlayerOnTheirConnect();
     }
     #endregion
+    
+   
+    
     /// <summary>
     /// This function will add new player to the game scene.
     /// </summary>
@@ -129,5 +138,17 @@ public class MessageProcessing : MonoBehaviour
     private static void SendTCPMessage(string msg)
     {
         TCP_Client.Instance.SendMessageToServer(msg);
+    }
+    
+    public void LogInAccount()
+    {
+        SendTCPMessage(TCPClientToHost.LOGIN.ToString() + ':' + loginText + ':' + passwordText);
+        StateManager.Instance.lastlySentLogin = loginText;
+    }
+
+    public void Registration()
+    {
+        // SendTCPMessage(loginText + ':' + Tcp);
+        // StateManager.Instance.lastlySentLogin = loginText;
     }
 }
