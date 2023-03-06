@@ -39,8 +39,7 @@ public class MessageProcessing : MonoBehaviour
 
 
     public Vector3 playerSpawnPos = new Vector3();
-    
-    
+
     private GameObject c1Name,c2Name, c1NameF, c2NameF, c1SaveB, c2SaveB, c1DeleteB, c2DeleteB, c1JoinB, c2JoinB, accountMSG;
     
 
@@ -279,6 +278,8 @@ public class MessageProcessing : MonoBehaviour
                     string[] posSplitter = splitter[1].Split(',');
                     playerSpawnPos = new Vector3(float.Parse(posSplitter[0]), float.Parse(posSplitter[1]),
                         float.Parse(posSplitter[2]));
+                   
+                    
 
 
                     if (splitter.Length > 2)
@@ -295,12 +296,11 @@ public class MessageProcessing : MonoBehaviour
                                     string[] vecSplitter = splitter[i + 2].Split(',');
                                     Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
                                         float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
-                                    //todo: use this to set the destination position of the other player *Do it when you add it to server.
-                                    // string[] destVecSplitter = splitter[i + 3].Split(',');
-                                    // Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
-                                    //     float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                                    string[] destVecSplitter = splitter[i + 3].Split(',');
+                                    Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                                        float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
                                     
-                                    Debug.Log("Other player name: " + newPlayerName + " pos: " + thePlayerPos);
+                                    Debug.Log("Other player name: " + newPlayerName + " pos: " + thePlayerPos + " destPos: " + thePlayerDestPos);
                                 }
                             }
                         }
