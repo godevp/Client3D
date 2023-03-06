@@ -279,6 +279,12 @@ public class MessageProcessing : MonoBehaviour
                     string[] posSplitter = splitter[1].Split(',');
                     playerSpawnPos = new Vector3(float.Parse(posSplitter[0]), float.Parse(posSplitter[1]),
                         float.Parse(posSplitter[2]));
+
+
+                    if (splitter.Length > 2)
+                    {
+                        
+                    }
                     break;
                 }
 
