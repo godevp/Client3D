@@ -283,7 +283,27 @@ public class MessageProcessing : MonoBehaviour
 
                     if (splitter.Length > 2)
                     {
-                        
+                        for (int i = 2; i <= splitter.Length - 1; i++)
+                        {
+                            //Debug.Log(splitter[i]);
+                            if (int.TryParse(splitter[i], out _))
+                            {
+                                int ident = int.Parse(splitter[i]);
+                                if (ident == TCPHostToClient.NEW_CHARACTER_JOINED_SERVER)
+                                {
+                                    string newPlayerName = splitter[i + 1];
+                                    string[] vecSplitter = splitter[i + 2].Split(',');
+                                    Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
+                                        float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
+                                    //todo: use this to set the destination position of the other player *Do it when you add it to server.
+                                    // string[] destVecSplitter = splitter[i + 3].Split(',');
+                                    // Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                                    //     float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                                    
+                                    Debug.Log("Other player name: " + newPlayerName + " pos: " + thePlayerPos);
+                                }
+                            }
+                        }
                     }
                     break;
                 }
