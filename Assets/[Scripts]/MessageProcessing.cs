@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
+using JetBrains.Annotations;
 using UnityEngine;
 using TMPro;
 using Object = System.Object;
@@ -29,6 +31,8 @@ public struct TCPClientToHost
     public const int DELETE_CHARACTER = 5;
     public const int CHARACTER_JOINING_WORLD = 6;
 }
+
+
 #endregion
 public class MessageProcessing : MonoBehaviour
 {
@@ -51,8 +55,7 @@ public class MessageProcessing : MonoBehaviour
     //for other players
     private bool createNew = false;
     private string nameForOtherPlayer = "";
-    private Vector3 pos = new Vector3();
-    private Vector3 dest11 = new Vector3();
+    private Queue<OtherPlayer> otherPlayerQueue = new Queue<OtherPlayer>();
     //
     
     private static char separator = ':';
@@ -115,33 +118,7 @@ public class MessageProcessing : MonoBehaviour
     #endregion
 
 
-    void StartNewPlayerCreation(Vector3 otherPos, Vector3 otherPDest, string otherName)
-    {
-        pos = otherPos;
-        dest11 = otherPDest;
-        nameForOtherPlayer = otherName;
-        createNew = true;
-    }
-    /// <summary>
-    /// This function will add new player to the game scene.
-    /// </summary>
-    void CreateNewPlayerOnTheirConnect()
-    {
-        if (createNew)
-        {
-            Debug.Log("Here");
-            GameObject playerobject = (GameObject)Instantiate(Resources.Load("Prefabs/ConnectedPlayer"));
-            Player newPlayer = playerobject.GetComponent<Player>();
-            playerobject.transform.position = pos;
-            newPlayer.destPos = dest11;
-            newPlayer._name = nameForOtherPlayer;
-            otherPlayers.Add(newPlayer);
-            pos = new Vector3(); 
-            dest11 = new Vector3();
-            nameForOtherPlayer = "";
-            createNew = false;
-        }
-    }
+  
     /// <summary>
     /// Message Processing itself. Here will be decided what logic will be used after a certain message received from server.
     /// </summary>
@@ -289,10 +266,12 @@ public class MessageProcessing : MonoBehaviour
                     {
                         for (int i = 2; i <= splitter.Length - 1; i++)
                         {
-                            //Debug.Log(splitter[i]);
                             if (int.TryParse(splitter[i], out _))
                             {
                                 int ident = int.Parse(splitter[i]);
+                                if (ident != TCPHostToClient.NEW_CHARACTER_JOINED_SERVER)
+                                    return;
+                                
                                 if (ident == TCPHostToClient.NEW_CHARACTER_JOINED_SERVER)
                                 {
                                     string newPlayerName = splitter[i + 1];
@@ -303,7 +282,7 @@ public class MessageProcessing : MonoBehaviour
                                     Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
                                         float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
                                     //create the player instance with the info provided.
-                                    StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
+                                    otherPlayerQueue.Enqueue(new OtherPlayer(newPlayerName, thePlayerPos, thePlayerDestPos));
                                 }
                             }
                         }
@@ -319,7 +298,9 @@ public class MessageProcessing : MonoBehaviour
                     string[] destVecSplitter = splitter[3].Split(',');
                     Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
                         float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
-                    StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
+                    //StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
+                    
+                    otherPlayerQueue.Enqueue(new OtherPlayer(newPlayerName, thePlayerPos, thePlayerDestPos));
                     break;
                 }
                 default: break;
@@ -327,7 +308,24 @@ public class MessageProcessing : MonoBehaviour
         }
     }
     
-    
+    /// <summary>
+    /// This function will add new player to the game scene.
+    /// </summary>
+    void CreateNewPlayerOnTheirConnect()
+    {
+        if (otherPlayerQueue.Count > 0)
+        {
+            GameObject playerobject = (GameObject)Instantiate(Resources.Load("Prefabs/ConnectedPlayer"));
+            Player newPlayer = playerobject.GetComponent<Player>();
+            var tempPlayer = otherPlayerQueue.Dequeue();
+            playerobject.transform.position = tempPlayer.position;
+            newPlayer.destPos = tempPlayer.destPosition;
+            newPlayer._name = tempPlayer.name;
+            otherPlayers.Add(newPlayer);
+            Debug.Log("Should Add: " + newPlayer._name);
+        }
+    }
+
     /// <summary>
     /// Takes the function for sending TCP messages from TCP_Client. Just for easiest use.
     /// </summary>
@@ -336,18 +334,25 @@ public class MessageProcessing : MonoBehaviour
     {
         TCP_Client.Instance.SendMessageToServer(msg);
     }
-    
+    /// <summary>
+    /// Message for login into account.
+    /// </summary>
     public void LogInAccount()
     {
         SendTCPMessage(TCPClientToHost.LOGIN.ToString() + ':' + loginText + ':' + passwordText);
         StateManager.Instance.lastlySentLogin = loginText;
     }
-
+    /// <summary>
+    /// Registration logic.
+    /// </summary>
     public void Registration()
     {
         SendTCPMessage(TCPClientToHost.REGISTRATION.ToString() + ':' + loginText + ':' + passwordText);
     }
-
+    /// <summary>
+    /// Sends a request to join the world.
+    /// </summary>
+    /// <param name="slot"></param>
     public void JoinWorld(int slot)
     {
         string characterName = "";
@@ -370,7 +375,10 @@ public class MessageProcessing : MonoBehaviour
         string[] elements = {TCPClientToHost.CHARACTER_JOINING_WORLD.ToString(),userName,slot.ToString(),characterName};
         SendTCPMessage(CombineWithSeparator(elements,separator.ToString()));
     }
-
+    /// <summary>
+    /// Deletes player from a specified character slot.
+    /// </summary>
+    /// <param name="slot"></param>
     public void DeleteCharacter(int slot)
     {
         string[] elements = {TCPClientToHost.DELETE_CHARACTER.ToString(),userName, slot.ToString()};
@@ -400,7 +408,9 @@ public class MessageProcessing : MonoBehaviour
             default: break;
         }
     }
-
+    /// <summary>
+    /// Used when we log out from account. To clear all the info on account panel.
+    /// </summary>
     public void ClearAccount()
     {
         c1Name.GetComponent<TMP_Text>().text = "Char1: ";
@@ -429,10 +439,30 @@ public class MessageProcessing : MonoBehaviour
         }
       
     }
-    
+    /// <summary>
+    /// Combines all the elements of string array and separate them with a certain string.
+    /// </summary>
+    /// <param name="variables"></param>
+    /// <param name="separator"></param>
+    /// <returns></returns>
     private static string CombineWithSeparator(string[] variables, string separator)
     {
         return string.Join(separator, variables);
     }
     
+}
+/// <summary>
+/// A class which is used for easier adding of other players.
+/// </summary>
+public class OtherPlayer
+{
+    public string name;
+    public Vector3 position;
+    public Vector3 destPosition;
+    public  OtherPlayer(string name, Vector3 position, Vector3 destPosition)
+    {
+        this.name = name;
+        this.position = position;
+        this.destPosition = destPosition;
+    }
 }
