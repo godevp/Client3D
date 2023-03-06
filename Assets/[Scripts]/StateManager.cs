@@ -14,7 +14,7 @@ public class StateManager : MonoBehaviour
         get { return instance; }
     }
     public GameState state;
-    private GameObject login_panel, account_panel;
+    private GameObject login_panel, account_panel, hideContent;
 
     private void Start()
     {
@@ -29,6 +29,7 @@ public class StateManager : MonoBehaviour
             account_panel = GameObject.Find("Account_Panel");
             account_panel.SetActive(false);
         }
+        
     }
 
     public static event Action<GameState> OnGameStateChanged;
@@ -47,6 +48,7 @@ public class StateManager : MonoBehaviour
     {
         UpdateGameState(GameState.logingState);
         TCP_Client.Instance.SendMessageToServer(TCPClientToHost.DISCONNECT.ToString() + ':' + MessageProcessing.Instance.Login);
+        MessageProcessing.Instance.ClearAccount();
     }
 public void UpdateGameState(GameState newState)
     {

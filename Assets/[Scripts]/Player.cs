@@ -21,10 +21,15 @@ public class Player : MonoBehaviour
 
    private void Start()
    {
+       Vector3 temp = MessageProcessing.Instance.playerSpawnPos + new Vector3(3, 0, 1);
+       transform.position = temp;
+       Debug.Log("We should spawn at: " + temp);
+       Debug.Log("We at: " + transform.position);
        if (thisClient)
        {
            destPosObject = GameObject.Find("DestPos");
-           destPosObject.transform.position = new Vector3(transform.position.x,destPosObject.transform.position.y,transform.position.z); 
+           destPosObject.transform.position = new Vector3(transform.position.x,destPosObject.transform.position.y,transform.position.z);
+           destPos = destPosObject.transform.position;
        }
    }
 
