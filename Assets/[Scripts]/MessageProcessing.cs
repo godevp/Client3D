@@ -41,18 +41,20 @@ public class MessageProcessing : MonoBehaviour
     public Vector3 playerSpawnPos = new Vector3();
 
     private GameObject c1Name,c2Name, c1NameF, c2NameF, c1SaveB, c2SaveB, c1DeleteB, c2DeleteB, c1JoinB, c2JoinB, accountMSG;
-    
-
+    private string nameForNewPlayer = "";
+    public List<Player> otherPlayers = new List<Player>();
     public string Login
     {
         set => userName = value;
         get => userName;
     }
-
+    //for other players
     private bool createNew = false;
+    private string nameForOtherPlayer = "";
     private Vector3 pos = new Vector3();
     private Vector3 dest11 = new Vector3();
-    private string nameForNewPlayer = "";
+    //
+    
     private static char separator = ':';
     private Player _player;
     private string loginText, passwordText;
@@ -107,12 +109,19 @@ public class MessageProcessing : MonoBehaviour
     {
         loginText = (GameObject.Find("Login_f") != null) ? GameObject.Find("Login_f").GetComponent<TMPro.TMP_InputField>().text : loginText;
         passwordText = (GameObject.Find("Password_f") != null) ? GameObject.Find("Password_f").GetComponent<TMPro.TMP_InputField>().text : passwordText;
+
         CreateNewPlayerOnTheirConnect();
     }
     #endregion
-    
-   
-    
+
+
+    void StartNewPlayerCreation(Vector3 otherPos, Vector3 otherPDest, string otherName)
+    {
+        pos = otherPos;
+        dest11 = otherPDest;
+        nameForOtherPlayer = otherName;
+        createNew = true;
+    }
     /// <summary>
     /// This function will add new player to the game scene.
     /// </summary>
@@ -120,20 +129,17 @@ public class MessageProcessing : MonoBehaviour
     {
         if (createNew)
         {
+            Debug.Log("Here");
             GameObject playerobject = (GameObject)Instantiate(Resources.Load("Prefabs/ConnectedPlayer"));
             Player newPlayer = playerobject.GetComponent<Player>();
-            playerobject.transform.position = new Vector3(pos.x, pos.y, pos.z);
-            newPlayer.destPos = new Vector3(dest11.x,playerobject.transform.position.y,dest11.z);
-            newPlayer._name = nameForNewPlayer;
-            UDP_Client.instance.otherPlayers.Add(newPlayer);
-            Vector3 pos1 = _player.transform.position;
-            Vector3 dest = _player.destPos;
-            // SendUDPMessage(UDP_Client.instance._name + ':' + ClientToUdpHost.SEND_MY_POS_AND_DEST + ':' +
-            //                pos1.x + ',' + pos1.y + ',' + pos1.z + ':' +
-            //                dest.x + ',' + dest.y + ',' + dest.z);
-            createNew = false;
-            pos = new Vector3();
+            playerobject.transform.position = pos;
+            newPlayer.destPos = dest11;
+            newPlayer._name = nameForOtherPlayer;
+            otherPlayers.Add(newPlayer);
+            pos = new Vector3(); 
             dest11 = new Vector3();
+            nameForOtherPlayer = "";
+            createNew = false;
         }
     }
     /// <summary>
@@ -278,10 +284,7 @@ public class MessageProcessing : MonoBehaviour
                     string[] posSplitter = splitter[1].Split(',');
                     playerSpawnPos = new Vector3(float.Parse(posSplitter[0]), float.Parse(posSplitter[1]),
                         float.Parse(posSplitter[2]));
-                   
-                    
-
-
+  
                     if (splitter.Length > 2)
                     {
                         for (int i = 2; i <= splitter.Length - 1; i++)
@@ -299,15 +302,26 @@ public class MessageProcessing : MonoBehaviour
                                     string[] destVecSplitter = splitter[i + 3].Split(',');
                                     Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
                                         float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
-                                    
-                                    Debug.Log("Other player name: " + newPlayerName + " pos: " + thePlayerPos + " destPos: " + thePlayerDestPos);
+                                    //create the player instance with the info provided.
+                                    StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
                                 }
                             }
                         }
                     }
                     break;
                 }
-
+                case TCPHostToClient.NEW_CHARACTER_JOINED_SERVER:
+                {
+                    string newPlayerName = splitter[1];
+                    string[] vecSplitter = splitter[2].Split(',');
+                    Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
+                        float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
+                    string[] destVecSplitter = splitter[3].Split(',');
+                    Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                        float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                    StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
+                    break;
+                }
                 default: break;
             }
         }
