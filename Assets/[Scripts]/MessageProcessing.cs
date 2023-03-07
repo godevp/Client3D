@@ -19,6 +19,7 @@ public struct TCPHostToClient
     public const int CHARACTER_CREATED = 6;
     public const int NEW_CHARACTER_JOINED_SERVER = 7;
     public const int YOUR_POSITION = 8;
+    public const int SET_PLAYER_POS_AND_DEST = 9;
     
 }
 
@@ -30,6 +31,7 @@ public struct TCPClientToHost
     public const int SAVE_NEW_CHARACTER = 4;
     public const int DELETE_CHARACTER = 5;
     public const int CHARACTER_JOINING_WORLD = 6;
+    public const int MY_POS_AND_DEST = 7;
 }
 
 
@@ -279,8 +281,12 @@ public class MessageProcessing : MonoBehaviour
                                     Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
                                         float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
                                     string[] destVecSplitter = splitter[i + 3].Split(',');
-                                    Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
-                                        float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                                    Vector3 thePlayerDestPos = new Vector3();
+                                    if (destVecSplitter.Length > 1)
+                                    {
+                                        thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                                            float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                                    }
                                     //create the player instance with the info provided.
                                     otherPlayerQueue.Enqueue(new OtherPlayer(newPlayerName, thePlayerPos, thePlayerDestPos));
                                 }
@@ -296,11 +302,33 @@ public class MessageProcessing : MonoBehaviour
                     Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
                         float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
                     string[] destVecSplitter = splitter[3].Split(',');
-                    Vector3 thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
-                        float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
-                    //StartNewPlayerCreation(thePlayerPos,thePlayerDestPos,newPlayerName);
+                    Vector3 thePlayerDestPos = new Vector3();
+                    if (destVecSplitter.Length > 1)
+                    {
+                        thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                            float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                    }
                     
                     otherPlayerQueue.Enqueue(new OtherPlayer(newPlayerName, thePlayerPos, thePlayerDestPos));
+                    break;
+                }
+                case TCPHostToClient.SET_PLAYER_POS_AND_DEST:
+                {
+                    string charName = splitter[1];
+                    string[] vecSplitter = splitter[2].Split(',');
+                    Vector3 thePlayerPos = new Vector3(float.Parse(vecSplitter[0]),
+                        float.Parse(vecSplitter[1]), float.Parse(vecSplitter[2]));
+                    string[] destVecSplitter = splitter[3].Split(',');
+                    Vector3 thePlayerDestPos = new Vector3();
+                    if (destVecSplitter.Length > 1)
+                    {
+                        thePlayerDestPos = new Vector3(float.Parse(destVecSplitter[0]),
+                            float.Parse(destVecSplitter[1]), float.Parse(destVecSplitter[2]));
+                    }
+
+                    otherPlayers.Find(player => player._name == charName).transform.position = thePlayerPos;
+                    otherPlayers.Find(player => player._name == charName).destPos = thePlayerDestPos;
+                    
                     break;
                 }
                 default: break;
@@ -319,8 +347,16 @@ public class MessageProcessing : MonoBehaviour
             Player newPlayer = playerobject.GetComponent<Player>();
             var tempPlayer = otherPlayerQueue.Dequeue();
             playerobject.transform.position = tempPlayer.position;
-            newPlayer.destPos = tempPlayer.destPosition;
+            if (tempPlayer.destPosition == new Vector3())
+            {
+                newPlayer.destPos = tempPlayer.position;
+            }
+            else
+            {
+                newPlayer.destPos = tempPlayer.destPosition;
+            }
             newPlayer._name = tempPlayer.name;
+            newPlayer.thisClient = false;
             otherPlayers.Add(newPlayer);
             Debug.Log("Should Add: " + newPlayer._name);
         }
@@ -449,7 +485,35 @@ public class MessageProcessing : MonoBehaviour
     {
         return string.Join(separator, variables);
     }
-    
+
+    public void SendDestPosToServer()
+    {
+        string[] elementsOfPosition =
+        {
+            _player.transform.position.x.ToString(),
+            _player.transform.position.y.ToString(),
+            _player.transform.position.z.ToString()
+        };
+        string[] elementsOfDestPosition =
+        {
+            _player.destPos.x.ToString(),
+            _player.destPos.y.ToString(),
+            _player.destPos.z.ToString(),
+        };
+        string[] elements =
+        {
+            TCPClientToHost.MY_POS_AND_DEST.ToString(),
+            userName,
+            CombineWithSeparator(elementsOfPosition,","),
+            CombineWithSeparator(elementsOfDestPosition,",")
+        };
+        SendTCPMessage(CombineWithSeparator(elements,separator.ToString()));
+    }
+
+    public void SetPlayer(Player player)
+    {
+        _player = player;
+    }
 }
 /// <summary>
 /// A class which is used for easier adding of other players.
