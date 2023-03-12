@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
    [SerializeField] private float maxSpeed = 5.0f;
    public GameObject destPosObject;
    public LayerMask groundMask;
+   public LayerMask targetsMask;
 
    private void Start()
    {
@@ -44,6 +45,23 @@ public class Player : MonoBehaviour
         //  Debug.Log(destPosObject.transform.position);
     }
 
+   void ClickOnTarget()
+   {
+       Vector3 mousePos = Input.mousePosition;
+       if (Input.GetMouseButtonDown(0) && thisClient)
+       {
+           if (Input.GetMouseButtonDown(0))
+           {
+               Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+               RaycastHit hitInfo;
+               
+               if (Physics.Raycast(ray, out hitInfo,Mathf.Infinity,targetsMask))
+               {
+                  Debug.Log(hitInfo);
+               }
+           }
+       }
+   }
    void SetDestPosByClick()//only for client
    {
        Vector3 mousePos = Input.mousePosition;
