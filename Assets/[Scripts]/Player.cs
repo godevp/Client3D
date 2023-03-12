@@ -38,31 +38,11 @@ public class Player : MonoBehaviour
 
    void Update()
     {
-        SetDestPosByClick();
+        ClickOnSomething();
         MoveToDestPos();
-        //Debug.Log(destPosObject == null);
-        // if(thisClient)
-        //  Debug.Log(destPosObject.transform.position);
     }
 
-   void ClickOnTarget()
-   {
-       Vector3 mousePos = Input.mousePosition;
-       if (Input.GetMouseButtonDown(0) && thisClient)
-       {
-           if (Input.GetMouseButtonDown(0))
-           {
-               Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-               RaycastHit hitInfo;
-               
-               if (Physics.Raycast(ray, out hitInfo,Mathf.Infinity,targetsMask))
-               {
-                  Debug.Log(hitInfo);
-               }
-           }
-       }
-   }
-   void SetDestPosByClick()//only for client
+   void ClickOnSomething()
    {
        Vector3 mousePos = Input.mousePosition;
        if (Input.GetMouseButtonDown(0) && thisClient)
@@ -72,15 +52,30 @@ public class Player : MonoBehaviour
                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                RaycastHit hitInfo;
                 
-               if (Physics.Raycast(ray, out hitInfo,Mathf.Infinity,groundMask))
+               if (Physics.Raycast(ray, out hitInfo,Mathf.Infinity))
                {
-                   destPos = new Vector3(hitInfo.point.x,transform.position.y,hitInfo.point.z);
-                   destPosObject.transform.position = new Vector3(destPos.x, 0, destPos.z);
+                   if (hitInfo.transform.CompareTag("Ground"))
+                   {
+                       SetDestPosByClick(hitInfo);
+                   }
+
+                   if (hitInfo.transform.CompareTag("otherPlayer"))
+                   {
+                       ClickOnTarget(hitInfo);
+                   }
                }
            }
-           //SendUDPMessage(UDP_Client.instance._name + ':' + ClientToUdpHost.SEND_MY_DESTINATION + ':' + destPos.x + ',' + destPos.y + ',' + destPos.z);
-           MessageProcessing.Instance.SendDestPosToServer();
        }
+   }
+   void ClickOnTarget(RaycastHit hitInfo)
+   {
+       Debug.Log(hitInfo.transform.gameObject.GetComponent<Player>()._name);
+   }
+   void SetDestPosByClick(RaycastHit hitInfo)//only for client
+   {
+       destPos = new Vector3(hitInfo.point.x,transform.position.y,hitInfo.point.z);
+                   destPosObject.transform.position = new Vector3(destPos.x, 0, destPos.z);
+                   MessageProcessing.Instance.SendDestPosToServer();
    }
    void MoveToDestPos()
    {
