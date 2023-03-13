@@ -20,6 +20,7 @@ public struct TCPHostToClient
     public const int NEW_CHARACTER_JOINED_SERVER = 7;
     public const int YOUR_POSITION = 8;
     public const int SET_PLAYER_POS_AND_DEST = 9;
+    public const int TARGET_CONFIRMED = 10;
     
 }
 
@@ -32,6 +33,7 @@ public struct TCPClientToHost
     public const int DELETE_CHARACTER = 5;
     public const int CHARACTER_JOINING_WORLD = 6;
     public const int MY_POS_AND_DEST = 7;
+    public const int MY_TARGET_IS = 8;
 }
 
 
@@ -43,6 +45,7 @@ public class MessageProcessing : MonoBehaviour
     [Header("Account Part")] [SerializeField]
     private string userName, c1 = "", c2 ="";
 
+    public string usedCharacterName = "";
 
     public Vector3 playerSpawnPos = new Vector3();
 
@@ -397,11 +400,13 @@ public class MessageProcessing : MonoBehaviour
             case 1:
             {
                 characterName = c1;
+                usedCharacterName = c1;
                 break;
             }
             case 2:
             {
                 characterName = c2;
+                usedCharacterName = c2;
                 break;
             }
             
