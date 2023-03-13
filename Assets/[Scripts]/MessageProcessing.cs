@@ -334,6 +334,14 @@ public class MessageProcessing : MonoBehaviour
                     
                     break;
                 }
+                case TCPHostToClient.TARGET_CONFIRMED:
+                {
+                    _player._target = splitter[1];
+                    _player.ClearTargetPanel();
+                    _player.FillTargetPanel();
+                    
+                    break;
+                }
                 default: break;
             }
         }

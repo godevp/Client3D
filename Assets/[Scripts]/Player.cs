@@ -8,6 +8,7 @@ using System;
 using System.Numerics;
 using TMPro;
 using UnityEngine.AI;
+using UnityEngine.UI;
 using Vector3 = UnityEngine.Vector3;
 
 public class Player : MonoBehaviour
@@ -18,7 +19,7 @@ public class Player : MonoBehaviour
     public string _target = "";
 
     public GameObject targetPanel, targetPanelName;
-
+    public Button untargetButton;
     [SerializeField] private float moveSpeed = 1200.0f;
    [SerializeField] private float maxSpeed = 5.0f;
    public GameObject destPosObject;
@@ -36,6 +37,8 @@ public class Player : MonoBehaviour
            destPosObject = GameObject.Find("DestPos");
            destPosObject.transform.position = new Vector3(transform.position.x,destPosObject.transform.position.y,transform.position.z);
            destPos = destPosObject.transform.position;
+           untargetButton = GameObject.Find("Untarget_b").GetComponent<Button>();
+           untargetButton.onClick.AddListener(Untarget);
            targetPanel = (GameObject.Find("TargetPanel") != null) ? GameObject.Find("TargetPanel") : null;
            targetPanelName = (GameObject.Find("TargetName") != null) ? GameObject.Find("TargetName") : null;
            targetPanel.SetActive(false);
@@ -52,7 +55,6 @@ public class Player : MonoBehaviour
         {
             TargetPart(); 
         }
-           
     }
 
    void ClickOnSomething()
@@ -114,31 +116,44 @@ public class Player : MonoBehaviour
     {
         if (_target != "")
         {
-            //Todo: create the target window
-            
-           // targetPanel.SetActive(true);
-          //  targetPanelName.GetComponent<TMP_Text>().text = _target; 
-            if (!DistanceToTargetIsFine())       //check the distance to player
+            if (_target != _name && !DistanceToTargetIsFine())       //check the distance to player
             {
-                _target = "";
-                //empty the target on server part
-                TCP_Client.Instance.SendMessageToServer(TCPClientToHost.MY_TARGET_IS.ToString() + ':' + MessageProcessing.Instance.Login + ':' +
-                                                        _target);
+                Untarget();
             }
         }
         else
         {
             //TODO:close the target window
-            targetPanelName.GetComponent<TMP_Text>().text = "";
-            targetPanel.SetActive(false);
+            if (targetPanel.activeInHierarchy)
+            {
+                ClearTargetPanel();
+            }
         }
-        
-        
+    }
+    
+    public void ClearTargetPanel()
+    {
+        targetPanelName.GetComponent<TMP_Text>().text = "";
+        targetPanel.SetActive(false);
+    }
+
+    public void FillTargetPanel()
+    {
+        targetPanel.SetActive(true);
+        targetPanelName.GetComponent<TMP_Text>().text = _target; 
+    }
+
+    public void Untarget()
+    {
+        _target = "";
+        ClearTargetPanel();
+        TCP_Client.Instance.SendMessageToServer(TCPClientToHost.MY_TARGET_IS.ToString() + ':' + MessageProcessing.Instance.Login + ':' +
+                                                _target);
     }
     private bool DistanceToTargetIsFine()
     {
         var targetPlayer = MessageProcessing.Instance.otherPlayers.Find(player => player._name == _target);
-        if (Vector3.Distance(gameObject.transform.position, targetPlayer.transform.position) >= 200)
+        if (targetPlayer != null && Vector3.Distance(gameObject.transform.position, targetPlayer.transform.position) >= 200)
         {
             Debug.Log("The Distance is too big between your player and the target");
             return false;
