@@ -5,10 +5,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using TMPro;
 using UnityEngine.AI;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 
 public class Player : MonoBehaviour
@@ -17,7 +19,6 @@ public class Player : MonoBehaviour
     public bool thisClient = true;
     public string _name = "";
     public string _target = "";
-
     public GameObject targetPanel, targetPanelName;
     public Button untargetButton;
     [SerializeField] private float moveSpeed = 1200.0f;
@@ -25,14 +26,15 @@ public class Player : MonoBehaviour
    public GameObject destPosObject;
    public LayerMask groundMask;
    public LayerMask targetsMask;
-
+   bool boolForPosSending = false;
    private void Start()
    {
-       transform.position = MessageProcessing.Instance.playerSpawnPos;
+       Debug.Log(transform.position);
        if (destPos == new Vector3())
            destPos = transform.position;
        if (thisClient)
        {
+           transform.position = MessageProcessing.Instance.playerSpawnPos;
            MessageProcessing.Instance.SetPlayer(this);
            destPosObject = GameObject.Find("DestPos");
            destPosObject.transform.position = new Vector3(transform.position.x,destPosObject.transform.position.y,transform.position.z);
@@ -106,8 +108,17 @@ public class Player : MonoBehaviour
    {
        if ((transform.position - destPos).magnitude > 0.1f)
        {
+           boolForPosSending = true;
            GetComponent<NavMeshAgent>().speed = moveSpeed * 0.02f;
            GetComponent<NavMeshAgent>().SetDestination(new Vector3(destPos.x, transform.position.y, destPos.z));
+       }
+       else
+       {
+           if (boolForPosSending)
+           {
+               MessageProcessing.Instance.SendDestPosToServer();
+               boolForPosSending = false;
+           }
        }
    }
 
