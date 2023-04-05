@@ -163,14 +163,7 @@ public class Player : MonoBehaviour
     }
     private bool DistanceToTargetIsFine()
     {
-        
         var targetPlayer = MessageProcessing.Instance.otherPlayers.Find(player => player._name == _target);
-        if(targetPlayer != null)
-            Debug.Log(Vector3.Distance(gameObject.transform.position, targetPlayer.transform.position));
-        else
-        {
-            Debug.Log("NULLLL");
-        }
         if (targetPlayer != null && Vector3.Distance(gameObject.transform.position, targetPlayer.transform.position) >= 65)
         {
             return false;
